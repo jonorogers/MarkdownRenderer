@@ -1,6 +1,8 @@
+using System.IO;
+using UnityEngine;
+using UnityEngine.Networking;
 using Markdig.Renderers;
 using Markdig.Syntax.Inlines;
-using UnityEngine.Networking;
 
 namespace Unity.Markdown.ObjectRenderers
 {
@@ -17,18 +19,43 @@ namespace Unity.Markdown.ObjectRenderers
             }
             else
             {
-                var uwr = new UnityWebRequest(link, UnityWebRequest.kHttpVerbGET);
                 var imgElem = renderer.AddImage();
 
-                uwr.downloadHandler = new DownloadHandlerTexture();
-                var asyncOp = uwr.SendWebRequest();
-
-                asyncOp.completed += operation =>
+                if (link.Contains("http://") || link.Contains("https://"))
                 {
-                    imgElem.image = DownloadHandlerTexture.GetContent(uwr);
-                    imgElem.tooltip = "This is a test";
-                    uwr.Dispose();
-                };
+                    var uwr = new UnityWebRequest(link, UnityWebRequest.kHttpVerbGET);
+
+                    uwr.downloadHandler = new DownloadHandlerTexture();
+                    var asyncOp = uwr.SendWebRequest();
+
+                    asyncOp.completed += operation =>
+                    {
+                        imgElem.image = DownloadHandlerTexture.GetContent(uwr);
+                        imgElem.tooltip = "This is a test";
+                        uwr.Dispose();
+                    };
+                }
+                else
+                {
+                    Texture2D tex = null;
+                    byte[] fileData;
+
+                    var path = Path.Combine(Application.dataPath, link);
+
+                    if (File.Exists(path))
+                    {
+                        fileData = File.ReadAllBytes(path);
+                        tex = new Texture2D(2, 2);
+                        tex.LoadImage(fileData); //..this will auto-resize the texture dimensions.
+
+                        imgElem.image = tex;
+                        imgElem.tooltip = "This is a test";
+                    }
+                    else
+                    {
+                        Debug.Log("File does not exist");
+                    }
+                }
             }
         }
     }
