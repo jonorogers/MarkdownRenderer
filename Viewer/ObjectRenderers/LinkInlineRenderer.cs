@@ -37,17 +37,11 @@ namespace Unity.Markdown.ObjectRenderers
                 }
                 else
                 {
-                    Texture2D tex = null;
-                    byte[] fileData;
 
-                    var path = Path.Combine(Application.dataPath, link);
+                    Texture2D tex = Resources.Load<Texture2D>(link);
 
-                    if (File.Exists(path))
+                    if (tex != null)
                     {
-                        fileData = File.ReadAllBytes(path);
-                        tex = new Texture2D(2, 2);
-                        tex.LoadImage(fileData); //..this will auto-resize the texture dimensions.
-
                         imgElem.image = tex;
                         imgElem.tooltip = "This is a test";
                     }
